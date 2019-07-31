@@ -18,9 +18,16 @@
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fas fa-user"></i>&nbsp;User Management <span class="caret"></span></a>
                     <ul class="dropdown-menu">
-                        <li><a href="#"><i class="far fa-user-circle"></i>&nbsp;User Account</a></li>
-                        <li role="separator" class="divider"></li>
-                        <li><a href="#"><i class="fas fa-sign-out-alt"></i>&nbsp;Logout</a></li>
+                        {{#if login}}
+                            <li><a href="/user/profile"><i class="far fa-user-circle"></i>&nbsp;User Account</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li><a href="/user/logout"><i class="fas fa-sign-out-alt"></i>&nbsp;Logout</a></li>
+                        {{else}}
+                            <li><a href="/user/signin"></i>Sign In</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li><a href="/user/signup">Sign Up</a></li>
+                        {{/if}}
+
                     </ul>
                 </li>
             </ul>

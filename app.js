@@ -25,13 +25,19 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use(cookieParser());
 
-app.use(session({secret:"mysecret",resave:false,saveUninitialized:false,cookie: { secure: false }}));
+app.use(session({secret:"mysecret",resave:false,saveUninitialized:false}));
 
 app.use(flash())
 app.use(passport.initialize())
 
 app.use(passport.session())
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.use(function (req,res,next) {
+  res.locals.login=req.isAuthenticated();
+  next();
+})
+
 app.use('/', indexRouter);
 app.use('/user',userRouter)
 require('./config/passport')

@@ -6,19 +6,22 @@ let bcrypt=require('bcrypt-nodejs');
 let dbconnect=require('../dbconfig/db-connect')
 let flash=require('connect-flash')
 let {check,validationResult}=require('express-validator')
+let ObjectID = require('mongodb').ObjectID;
 
-console.log('user')
+
 passport.serializeUser(function(user, done) {
     console.log(user)
-
+    console.log("serialized")
     console.log(user._id)
 
     done(null,user._id);
 });
 passport.deserializeUser(function(id, done) {
-    dbconnect.get().collection('users').findOne({_id:id}, function(err, user) {
-        console.log("KK"+id)
-        done(err, user);
+    let idString=id
+    let objId = new ObjectID(idString);
+    dbconnect.get().collection('users').findOne({_id:objId}, function(err, user) {
+        console.log("KK"+user._id)
+        done(null, user);
     });
 });
 
@@ -54,7 +57,6 @@ passport.use('local-signup',new LocalStrategy({usernameField:'email',passwordFie
 
                 dbconnect.get().collection('users').insertOne(newUser);
                 console.log(newUser)
-
 console.log("HH"+newUser._id)
 
                 return done(null, newUser);
