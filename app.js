@@ -4,12 +4,20 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 let expressHBS=require('express-handlebars');
-let db=require('./dbconfig/db-connect');
+let dbconnect=require('./dbconfig/db-connect');
 let session=require('express-session')
 let passport=require('passport')
 let flash=require('connect-flash')
 var indexRouter = require('./routes/index');
 let userRouter=require('./routes/users');
+let MongoClient=require('mongodb').MongoClient;
+const url='mongodb://localhost:27017/test';
+var MongoStore = require('connect-mongo')(session);
+
+const client=new MongoClient(url,{useNewUrlParser:true});
+client.connect();
+
+
 
 const { check, validationResult } = require('express-validator');
 var app = express();
@@ -25,7 +33,9 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use(cookieParser());
 
-app.use(session({secret:"mysecret",resave:false,saveUninitialized:false}));
+app.use(session({store: new MongoStore({client: client}),secret:"mysecret",resave:false,saveUninitialized:false,cookie:{maxAge:180*60*1000}}));
+
+
 
 app.use(flash())
 app.use(passport.initialize())
@@ -35,6 +45,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(function (req,res,next) {
   res.locals.login=req.isAuthenticated();
+  res.locals.session=req.session;
   next();
 })
 
@@ -58,7 +69,7 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
-db.connect(function (error) {
+dbconnect.connect(function (error) {
   if(error){
     console.log("Unable to connect database");
     process.exit(1);
