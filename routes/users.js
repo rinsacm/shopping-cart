@@ -5,13 +5,26 @@ let csrf=require('csurf')
 let csrfprotection =csrf();
 router.use(csrfprotection)
 let passport=require('passport');
-
+let CART=require('../cart/cart')
 let dbconnect=require('../dbconfig/db-connect')
 const { check, validationResult } = require('express-validator');
 
 /* GET users listing. */
 router.get('/profile',isLoggedIn,function (req,res,next) {
-    res.render('user/profile')
+    dbconnect.get().collection('orders').findOne({user:req.user},function(err,order){
+        if(err)
+        res.write('Error!');
+        else{
+           
+                let cart=order.cart;
+                order.items=CART.generateArray(cart);
+                
+            }
+            console.log(order)
+            res.render('user/profile',{orders:order})
+        
+    })
+    
 })
 router.get('/logout',isLoggedIn,function (req,res,next) {
     req.logOut();
@@ -34,11 +47,19 @@ router.get('/signin',function (req,res,next){
 router.post('/signup',[check('email','Invalid email').isEmail(),check('password','Invalid password.').isLength({min:5})],
         passport.authenticate('local-signup',
             {
-                successRedirect:'/user/profile',
+                
                 failureRedirect:'/user/signup',
                 failureFlash:true
+            }),function(req,res,next){
+                if(req.session.oldUrl){
+                var oldUrl = req.session.oldUrl;
+                req.session.oldUrl = null;
+                res.redirect(oldUrl);
+                } 
+                else {
+                    res.redirect('/user/profile')
+                }
             }
-        )
 );
 router.post('/signin',[check('email','Invalid email').isEmail(),check('password','Invalid password.').isLength({min:5})],
     passport.authenticate('local-signin',
